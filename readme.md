@@ -204,7 +204,22 @@ Note that this is **not intended for security purposes**, since the encryption k
 
 Its main use is for obscurity. If a user looks through the config directory and finds the config file, since it's just a JSON file, they may be tempted to modify it. By providing an encryption key, the file will be obfuscated, which should hopefully deter any users from doing so.
 
-When specified, the store will be encrypted using the [`aes-256-cbc`](https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation) encryption algorithm.
+When using `aes-256-gcm`, the config file is authenticated. If the file is changed in any way, the decryption will fail. With `aes-256-cbc` and `aes-256-ctr`, tampering can go undetected.
+
+When specified, the store will be encrypted using the `encryptionAlgorithm` option (defaults to `aes-256-cbc`).
+
+#### encryptionAlgorithm
+
+Type: `'aes-256-cbc' | 'aes-256-gcm' | 'aes-256-ctr'`\
+Default: `'aes-256-cbc'`
+
+Encryption algorithm to use when `encryptionKey` is set.
+
+Use `aes-256-gcm` if you want authentication, otherwise use `aes-256-cbc` or `aes-256-ctr`.
+
+Changing `encryptionAlgorithm` will make existing encrypted data unreadable.
+
+When using `aes-256-gcm` or `aes-256-ctr`, existing plaintext config files are not supported. Delete the config file or migrate it before enabling encryption. With `aes-256-cbc`, existing plaintext config files are still readable for backward compatibility.
 
 #### fileExtension
 
