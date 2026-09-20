@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import process from 'node:process';
 import electron from 'electron';
 import test from 'ava';
 import {execa} from 'execa';
@@ -22,6 +23,12 @@ test('main', async t => {
 	const storagePath = await run('fixture.js');
 	t.deepEqual(JSON.parse(fs.readFileSync(storagePath, 'utf8')), {ava: '🚀'});
 	fs.unlinkSync(storagePath);
+});
+
+test('fails with a helpful error outside Electron', async t => {
+	const {failed, stderr} = await execa(process.execPath, ['fixture-non-electron.js'], {reject: false});
+	t.true(failed);
+	t.true(stderr.includes('You can only use this module from the Electron main process or the renderer process, unless you pass an absolute `cwd`.'));
 });
 
 test('cwd option', async t => {
