@@ -127,6 +127,68 @@ console.log(store.get('bar.a'));
 
 Without `default: {}` on `bar`, the store has no `bar` object to apply `a` to, so `store.get('bar.a')` returns `undefined`.
 
+#### rootSchema
+
+Type: `object`
+
+[JSON Schema](https://json-schema.org) for the root object of the config. The `schema` option defines the `properties` of that object, so this is where you put everything that applies to the config object as a whole.
+
+For example, to require a property:
+
+```js
+const store = new Store({
+	rootSchema: {
+		required: ['foo']
+	},
+	schema: {
+		foo: {
+			type: 'number'
+		}
+	}
+});
+```
+
+Or to reject properties that are not in `schema`:
+
+```js
+const store = new Store({
+	rootSchema: {
+		additionalProperties: false
+	},
+	schema: {
+		foo: {
+			type: 'number'
+		}
+	}
+});
+```
+
+#### ajvOptions
+
+Type: `object`
+
+[Options passed to ajv](https://ajv.js.org/options.html), the JSON Schema validator used under the hood.
+
+By default, `allErrors` and `useDefaults` are set to `true`, but you can override them.
+
+Ajv runs in [strict mode](https://ajv.js.org/strict-mode.html) by default, so a schema that contains a keyword Ajv does not know about throws with `strict mode: unknown keyword`. Turn strict mode off to allow such schemas:
+
+```js
+const store = new Store({
+	schema: {
+		foo: {
+			type: 'number',
+			isEven: true
+		}
+	},
+	ajvOptions: {
+		strict: false
+	}
+});
+```
+
+Ajv ignores the unknown keyword, so it does not validate anything on its own.
+
 #### migrations
 
 Type: `object`
@@ -266,6 +328,17 @@ Default: `'json'`
 Extension of the config file.
 
 You would usually not need this, but could be useful if you want to interact with a file with a custom file extension that can be associated with your app. These might be simple save/export/preference files that are intended to be shareable or saved outside of the app.
+
+#### configFileMode
+
+Type: `number`\
+Default: `0o666`
+
+The [mode](https://en.wikipedia.org/wiki/File-system_permissions#Numeric_notation) used when creating the config file. It is modified by the [process umask](https://en.wikipedia.org/wiki/Umask), so with the typical umask of `0o022` the default results in `0o644`.
+
+You would usually not need this, but it could be useful if you use a custom `cwd`. Setting `0o600` makes the file readable only by the owner.
+
+Setting restrictive permissions can cause problems if different users need to read the file.
 
 #### clearInvalidConfig
 
