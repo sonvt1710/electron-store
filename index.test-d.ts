@@ -3,6 +3,7 @@ import Store, {type Schema, type Options} from './index.js';
 
 new Store({defaults: {}}); // eslint-disable-line no-new
 new Store({name: 'myConfiguration'}); // eslint-disable-line no-new
+new Store({projectVersion: '1.0.0'}); // eslint-disable-line no-new
 
 // The options can be built up by assignment.
 declare const options: Options<Record<string, unknown>>;

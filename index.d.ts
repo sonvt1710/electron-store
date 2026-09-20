@@ -3,7 +3,7 @@ import Conf, {type Options as ConfigOptions} from 'conf';
 
 export type {Schema} from 'conf';
 
-export type Options<T extends Record<string, any>> = Except<ConfigOptions<T>, 'configName' | 'projectName' | 'projectVersion' | 'projectSuffix'> & {
+export type Options<T extends Record<string, any>> = Except<ConfigOptions<T>, 'configName' | 'projectName' | 'projectSuffix'> & {
 	/**
 	Name of the storage file (without extension).
 

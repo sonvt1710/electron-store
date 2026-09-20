@@ -134,6 +134,13 @@ const store = new Store({
 });
 ```
 
+#### projectVersion
+
+Type: `string`\
+Default: [`app.getVersion()`](https://electronjs.org/docs/api/app#appgetversion)
+
+The version the `migrations` option compares against. It defaults to your app's version, so you only need to set this if you want the migrations to run against a different version, for example while developing.
+
 ### beforeEachMigration
 
 Type: `Function`\
