@@ -32,6 +32,10 @@ const initDataListener = () => {
 };
 
 export default class ElectronStore extends Conf {
+	static initRenderer() {
+		initDataListener();
+	}
+
 	constructor(options) {
 		let defaultCwd;
 		let appVersion;
@@ -67,10 +71,6 @@ export default class ElectronStore extends Conf {
 		delete options.name;
 
 		super(options);
-	}
-
-	static initRenderer() {
-		initDataListener();
 	}
 
 	async openInEditor() {

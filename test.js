@@ -26,7 +26,7 @@ test('main', async t => {
 
 test('cwd option', async t => {
 	const result = await run('fixture-cwd.js');
-	const [defaultPath, storagePath, storagePath2] = result.split('\n');
+	const [defaultPath, storagePath, storagePath2] = result.split('\n', 3);
 	t.is(storagePath, path.join(defaultPath, 'foo/config.json'));
 	t.is(storagePath2, path.join(import.meta.dirname, 'bar/config.json'));
 	fs.unlinkSync(storagePath);

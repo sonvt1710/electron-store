@@ -50,7 +50,6 @@ typedStore.set({
 	interval: 10_000,
 });
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const offDidChange = typedStore.onDidChange(
 	'isEnabled',
 	(newValue, oldValue) => {
