@@ -11,7 +11,7 @@ export type Options<T extends Record<string, any>> = Except<ConfigOptions<T>, 'c
 
 	@default 'config'
 	*/
-	readonly name?: string;
+	name?: string;
 };
 
 /**

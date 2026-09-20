@@ -1,8 +1,12 @@
 import {expectType, expectAssignable} from 'tsd';
-import Store, {Schema} from './index.js';
+import Store, {type Schema, type Options} from './index.js';
 
 new Store({defaults: {}}); // eslint-disable-line no-new
 new Store({name: 'myConfiguration'}); // eslint-disable-line no-new
+
+// The options can be built up by assignment.
+declare const options: Options<Record<string, unknown>>;
+options.name = 'myConfiguration';
 
 const store = new Store();
 
