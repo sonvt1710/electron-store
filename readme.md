@@ -10,7 +10,7 @@ Electron doesn't have a built-in way to persist user settings and other data. Th
 You can use this module directly in both the main and renderer process. For use in the renderer process only, you need to call `Store.initRenderer()` in the main process, or create a new Store instance (`new Store()`) in the main process.
 
 > [!WARNING]
-> Using this module in the renderer process requires access to Node.js built-ins like `fs` and `path`. Electron disables that by default with `contextIsolation: true` and `sandbox: true`, so importing it from a renderer or preload script fails with errors such as `Can't resolve 'fs'` or `module not found`. Turning those options off is not recommended. Prefer keeping the store in the main process and exposing it over IPC with [`ipcMain.handle`](https://www.electronjs.org/docs/api/ipc-main#ipcmainhandlechannel-listener) and [`ipcRenderer.invoke`](https://www.electronjs.org/docs/api/ipc-renderer#ipcrendererinvokechannel-args).
+> Using this module in the renderer process requires access to Node.js built-ins like `fs` and `path`. Electron disables Node.js in the renderer by default (`nodeIntegration: false`), and in the preload script since Electron 20 (`sandbox: true`). Importing this module from a renderer or preload script therefore fails with errors such as `Can't resolve 'fs'` or `module not found: fs`. Disabling those defaults is not recommended. Prefer keeping the store in the main process and exposing it over IPC with [`ipcMain.handle`](https://www.electronjs.org/docs/api/ipc-main#ipcmainhandlechannel-listener) and [`ipcRenderer.invoke`](https://www.electronjs.org/docs/api/ipc-renderer#ipcrendererinvokechannel-args).
 
 ## Install
 
@@ -127,28 +127,15 @@ console.log(store.get('bar.a'));
 
 Without `default: {}` on `bar`, the store has no `bar` object to apply `a` to, so `store.get('bar.a')` returns `undefined`.
 
+This applies at each level, so a property nested two objects deep needs a `default` of `{}` on both objects in the chain.
+
 #### rootSchema
 
 Type: `object`
 
 [JSON Schema](https://json-schema.org) for the root object of the config. The `schema` option defines the `properties` of that object, so this is where you put everything that applies to the config object as a whole.
 
-For example, to require a property:
-
-```js
-const store = new Store({
-	rootSchema: {
-		required: ['foo']
-	},
-	schema: {
-		foo: {
-			type: 'number'
-		}
-	}
-});
-```
-
-Or to reject properties that are not in `schema`:
+For example, to reject properties that are not in `schema`:
 
 ```js
 const store = new Store({
@@ -161,7 +148,14 @@ const store = new Store({
 		}
 	}
 });
+
+store.set('bar', 1);
+// [Error: Config schema violation: `` must NOT have additional properties]
 ```
+
+`additionalProperties: false` does not work together with the `migrations` option, because the store keeps its migration bookkeeping in the config under a key that is not in `schema`.
+
+To require a property, add it to `required` and give it a `default` in `schema` as well. Otherwise a new config has no value for the property and the store throws when it is created.
 
 #### ajvOptions
 
@@ -171,7 +165,7 @@ Type: `object`
 
 By default, `allErrors` and `useDefaults` are set to `true`, but you can override them.
 
-Ajv runs in [strict mode](https://ajv.js.org/strict-mode.html) by default, so a schema that contains a keyword Ajv does not know about throws with `strict mode: unknown keyword`. Turn strict mode off to allow such schemas:
+Ajv runs in [strict mode](https://ajv.js.org/strict-mode.html) by default, so a schema that contains a keyword Ajv does not know about throws an error such as `strict mode: unknown keyword: "isEven"`. Turn strict mode off to allow such schemas:
 
 ```js
 const store = new Store({
@@ -230,7 +224,7 @@ Default: [`app.getVersion()`](https://electronjs.org/docs/api/app#appgetversion)
 
 The version the `migrations` option compares against. It defaults to your app's version, so you only need to set this if you want the migrations to run against a different version, for example while developing.
 
-### beforeEachMigration
+#### beforeEachMigration
 
 Type: `Function`\
 Default: `undefined`
@@ -345,7 +339,7 @@ Setting restrictive permissions can cause problems if different users need to re
 Type: `boolean`\
 Default: `false`
 
-The config is cleared if reading the config file causes a `SyntaxError`. This is a good behavior for unimportant data, as the config file is not intended to be hand-edited, so it usually means the config is corrupt and there's nothing the user can do about it anyway. However, if you let the user edit the config file directly, mistakes might happen and it could be more useful to throw an error when the config is invalid instead of clearing.
+The config is cleared if reading the config file causes a `SyntaxError` (malformed JSON), a schema validation error when using the `schema` option, or a decryption failure when using `encryptionKey`. This is a good behavior for unimportant data, as the config file is not intended to be hand-edited, so it usually means the config is corrupt and there's nothing the user can do about it anyway. However, if you let the user edit the config file directly, mistakes might happen and it could be more useful to throw an error when the config is invalid instead of clearing.
 
 #### serialize
 
@@ -571,8 +565,8 @@ import yaml from 'js-yaml';
 
 const store = new Store({
 	fileExtension: 'yaml',
-	serialize: yaml.safeDump,
-	deserialize: yaml.safeLoad
+	serialize: yaml.dump,
+	deserialize: yaml.load
 });
 ```
 
