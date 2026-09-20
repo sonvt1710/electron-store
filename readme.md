@@ -9,6 +9,9 @@ Electron doesn't have a built-in way to persist user settings and other data. Th
 
 You can use this module directly in both the main and renderer process. For use in the renderer process only, you need to call `Store.initRenderer()` in the main process, or create a new Store instance (`new Store()`) in the main process.
 
+> [!WARNING]
+> Using this module in the renderer process requires access to Node.js built-ins like `fs` and `path`. Electron disables that by default with `contextIsolation: true` and `sandbox: true`, so importing it from a renderer or preload script fails with errors such as `Can't resolve 'fs'` or `module not found`. Turning those options off is not recommended. Prefer keeping the store in the main process and exposing it over IPC with [`ipcMain.handle`](https://www.electronjs.org/docs/api/ipc-main#ipcmainhandlechannel-listener) and [`ipcRenderer.invoke`](https://www.electronjs.org/docs/api/ipc-renderer#ipcrendererinvokechannel-args).
+
 ## Install
 
 ```sh
@@ -456,6 +459,8 @@ Returns a promise that resolves when the editor has been opened, or rejects if i
 ### initRenderer()
 
 Initializer to set up the required `ipc` communication channels for the module when a `Store` instance is not created in the main process and you are creating a `Store` instance in the Electron renderer process only.
+
+The renderer process must have access to Node.js built-ins for this to work. See the warning at the top of this readme.
 
 In the main process:
 
