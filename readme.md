@@ -100,6 +100,30 @@ store.set('foo', '1');
 
 **Note:** The `default` value will be overwritten by the `defaults` option if set.
 
+A `default` on a nested property is only applied when the parent object exists. Give the parent a `default` of an empty object so the defaults of its properties are applied too:
+
+```js
+const store = new Store({
+	schema: {
+		bar: {
+			type: 'object',
+			default: {},
+			properties: {
+				a: {
+					type: 'number',
+					default: 5
+				}
+			}
+		}
+	}
+});
+
+console.log(store.get('bar.a'));
+//=> 5
+```
+
+Without `default: {}` on `bar`, the store has no `bar` object to apply `a` to, so `store.get('bar.a')` returns `undefined`.
+
 #### migrations
 
 Type: `object`

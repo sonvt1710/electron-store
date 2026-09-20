@@ -32,6 +32,26 @@ assert.strictEqual(storeWithSchema.get('foo'), 77);
 storeWithSchema.reset('foo');
 assert.strictEqual(storeWithSchema.get('foo'), 42);
 
+const storeWithNestedSchema = new Store({
+	name: 'electron-store-with-nested-schema',
+	schema: {
+		bar: {
+			type: 'object',
+			default: {},
+			properties: {
+				a: {
+					type: 'number',
+					default: 5,
+				},
+			},
+		},
+	},
+});
+
+// A nested `default` only applies when the parent object exists.
+storeWithNestedSchema.clear();
+assert.strictEqual(storeWithNestedSchema.get('bar.a'), 5);
+
 // To be checked in AVA
 store.set('ava', '🚀');
 
